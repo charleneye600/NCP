@@ -36,123 +36,7 @@ class Epidemic():
         self.icbar_cure = 0#全国治愈
         self.icbar_dead = 0#全国死亡
         self.dataDic = dict()#键为省名，值为省的具体数据
-    def spider1(self,url):#此方法已失效
-        global timeNum, provinceDic
-        # 无窗口弹出操作
-        options = Options()
-        options.add_argument('--headless')
-        options.add_argument('--disable-gpu')
-        driver=selenium.webdriver.Chrome(options=options)
-        driver.get(url)
-        timeNum=driver.find_element_by_xpath('//*[@id="charts"]/div[2]/span[1]').text#实时
-        icbar_confirm=driver.find_element_by_xpath('//*[@id="charts"]/div[3]/div[1]/div[1]').text#全国确诊数
-        icbar_suspect=driver.find_element_by_xpath('//*[@id="charts"]/div[3]/div[2]/div[1]').text#疑似病例数
-        icbar_cure=driver.find_element_by_xpath('//*[@id="charts"]/div[3]/div[3]/div[1]').text#治愈人数
-        icbar_dead=driver.find_element_by_xpath('//*[@id="charts"]/div[3]/div[4]/div[1]').text#死亡人数
-        print("{}\n全国确诊：{}\n疑似病例：{}\n治愈人数：{}\n死亡人数：{}\n".format(timeNum, icbar_confirm, icbar_cure, icbar_dead,icbar_suspect))
-        place_current=driver.find_elements_by_css_selector('div[class="place  current"]')#湖北省的数据
-        place = driver.find_elements_by_css_selector('div[class="place"]')#其他省的数据
-        place_= driver.find_elements_by_css_selector('div[class="place  "]')#其他省的数据
-        place_no_sharp = driver.find_elements_by_css_selector("div[class='place no-sharp ']")#自治区的数据
-        tplt = "{0:{4}<10}\t{1:{4}<15}\t{2:{4}<15}\t{3:{4}<15}"
-        print(tplt.format("地区","确诊人数","治愈人数","死亡人数",chr(12288)) + "\n")
-        # 建立一个字典，键为省名，值为省的具体数据
-        provinceDic=dict()
-        provinceDic["全国"]=["全国",icbar_confirm, icbar_cure, icbar_dead, icbar_suspect]
-        places = place_current + place + place_ + place_no_sharp  # 所有的行省的数据列表合集
-        for place in places:
-            # print(place.text)
-            name=place.find_element_by_css_selector("span[class='infoName']").text
-            confirm=place.find_element_by_css_selector("span[class='confirm'] span").text
-            try:
-                heal=place.find_element_by_css_selector("span[class='heal '] span").text
-            except:
-                heal = place.find_element_by_css_selector("span[class='heal hide'] span").text
-            try:
-                dead=place.find_element_by_css_selector("span[class='dead '] span").text
-            except:
-                dead=place.find_element_by_css_selector("span[class='dead hide'] span").text
-            print(tplt.format(name,confirm,heal,dead,chr(12288)))
-            provinceDic[name]=[name,confirm,heal,dead]
-            # 建立一个字典，键为城市名，值为城市的具体数据
-            # citiesDic=dict()
-            # citiesDic[name]=[name,confirm,heal,dead]
-            # cities=place.find_elements_by_css_selector("div[area={0}]".format(name))
-            # for city in cities:#此省的每一个城市
-            #     print(city.text)
-            #     spans=city.find_elements_by_css_selector("span")
-            #     i=0
-            #     for span in spans:
-            #         # print(i,span.text)
-            #         i+=1
-            #     name = spans[0].text
-            #     confirm = spans[1].text
-            #     try:
-            #         heal = spans[3].text
-            #     except:
-            #         heal = spans[3].text
-            #     try:
-            #         dead = spans[5].text
-            #     except:
-            #         dead = spans[5].text
-            #     citiesDic[name]=[name,confirm,heal,dead]
-            #     print(name, confirm, heal, dead)
-    def spider2(self,url):#1/29目标网页已改变，此方法已失效
-        global timeNum, provinceDic
-        # 无窗口弹出操作
-        options = Options()
-        options.add_argument('--headless')
-        options.add_argument('--disable-gpu')
-        driver=selenium.webdriver.Chrome(options=options)
-        driver.get(url)
-        timeNum=driver.find_element_by_css_selector("div[class='timeNum'] p[class='d']").text#实时
-        icbar_confirm=driver.find_element_by_css_selector("div[class='icbar confirm'] div[class='number']").text#全国确诊数
-        icbar_suspect=driver.find_element_by_css_selector("div[class='icbar suspect'] div[class='number']").text#疑似病例数
-        icbar_cure=driver.find_element_by_css_selector("div[class='icbar cure'] div[class='number']").text#治愈人数
-        icbar_dead=driver.find_element_by_css_selector("div[class='icbar dead'] div[class='number']").text#死亡人数
-        print("\n{}\n全国确诊：{}\n疑似病例：{}\n治愈人数：{}\n死亡人数：{}\n".format(timeNum, icbar_confirm,icbar_suspect, icbar_cure, icbar_dead))
-        placeItemWrap=driver.find_elements_by_css_selector('div[class="placeItemWrap current"]')#湖北省的数据
-        placeItemWrap_ = driver.find_elements_by_css_selector('div[class="placeItemWrap "]')#其他省的数据
-        abroad = driver.find_elements_by_css_selector('div[class="clearfix placeItem placeArea no-sharp abroad"]')  # 海外国家的数据
-        tplt = "{1:{0}<10}\t{2:{0}<15}\t{3:{0}<15}\t{4:{0}<15}\t{5:{0}<15}"
-        print(tplt.format(chr(12288),"地区","新增确诊","确诊人数","治愈人数","死亡人数",))
-        # 建立一个字典，键为省名，值为省的具体数据
-        provinceDic=dict()
-        places = placeItemWrap + placeItemWrap_ + abroad # 所有的地区的数据列表合集
-        national_confirm=0#全国新增确诊
-        for place in places:
-            # print(place.text)
-            try:#国内地区
-                name=place.find_element_by_css_selector("h2[class='blue']").text
-            except:# 海外地区
-                try:
-                    name = place.find_element_by_css_selector("h2[class='blue ']").text
-                except:
-                    name = place.find_element_by_css_selector("h2[class='blue small']").text
-            try:#国内新增确诊
-                add=place.find_element_by_css_selector("div[class='add ac_add']").text
-            except:
-                add=""
-            try:#国内累计确诊
-                confirm=place.find_element_by_css_selector("div[class='confirm']").text
-            except:# 海外累计确诊
-                confirm = place.find_elements_by_css_selector("div")[0].text
-            try:#国内治愈
-                heal=place.find_element_by_css_selector("div[class='heal']").text
-            except:#海外累计治愈
-                heal = place.find_elements_by_css_selector("div")[1].text
-            try:#国内死亡
-                dead=place.find_element_by_css_selector("div[class='dead']").text
-            except:#海外死亡
-                dead = place.find_elements_by_css_selector("div")[2].text
-            print(tplt.format(chr(12288),name,add,confirm,heal,dead,))
-            provinceDic[name]=[name,confirm,heal,dead,add]
-            try:#计算全国新增确诊数
-                national_confirm+=int(add)
-            except:#数据项为"-"，则跳过
-                pass
-        provinceDic["全国"] = ["全国", icbar_confirm, icbar_cure, icbar_dead, national_confirm, icbar_suspect]
-    def spider3(self):#2/1目标网页已改变
+    def spider(self):#2/1目标网页已改变
         global timeNum, provinceDic
         # 无窗口弹出操作
         options = Options()
@@ -249,7 +133,7 @@ class Epidemic():
 
     def main(self):
         ''''''
-        self.spider3()#获取疫情实时动态信息
+        self.spider()#获取疫情实时动态信息
         self.save_data_csv(filepath="allcsv",\
                            filename=self.timeNum[3:22].replace(":"," "))#存入allcsv文件
         self.save_data_csv(filepath="dailycsv",\
